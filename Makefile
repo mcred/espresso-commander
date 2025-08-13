@@ -18,9 +18,6 @@ build:
 test:
 	$(GOTEST) -v ./...
 
-test-coverage:
-	$(GOTEST) -v -cover ./...
-
 clean:
 	@echo "Cleaning..."
 	@rm -rf bin/
