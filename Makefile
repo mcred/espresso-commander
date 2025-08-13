@@ -5,7 +5,7 @@ BINARY_NAME=espresso-commander
 VERSION=$(shell git describe --tags --always --dirty 2>/dev/null || echo "dev")
 BUILD_DATE=$(shell date -u +"%Y-%m-%dT%H:%M:%SZ")
 
-.PHONY: build test clean install uninstall package run help
+.PHONY: build test clean install uninstall package run
 
 # Default target
 all: test build
