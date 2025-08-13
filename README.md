@@ -92,3 +92,6 @@ make test
 This runs the included unit tests for main.go and commander.go.
 
 ## Demo
+
+https://github.com/user-attachments/assets/ce8b0b6d-22a2-4be8-a1f2-e35762a3650b
+
