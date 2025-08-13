@@ -64,7 +64,7 @@ func (c *commander) Ping(host string) (PingResult, error) {
     log.Printf("PING %s (%s):\n", pinger.Addr(), pinger.IPAddr())
     err = pinger.Run()
     if err != nil {
-        panic(fmt.Errorf("Failed to ping target host:", err))
+        panic(fmt.Errorf("Failed to ping target host: %w", err))
     }
     return PingResult{Successful: s, Time: t}, nil
 }
