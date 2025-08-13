@@ -92,4 +92,3 @@ make test
 This runs the included unit tests for main.go and commander.go.
 
 ## Demo
-![Espresso Commander Demo](assets/demo.gif)
