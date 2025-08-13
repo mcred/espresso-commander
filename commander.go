@@ -58,9 +58,7 @@ func (c *commander) Ping(host string) (PingResult, error) {
     pinger.Interval = time.Second
     pinger.Timeout = time.Second * 100000
     pinger.TTL = 64
-    //pinger.InterfaceName = "ping"
     pinger.SetPrivileged(false)
-    //pinger.SetTrafficClass(uint8(192))
 
     log.Printf("PING %s (%s):\n", pinger.Addr(), pinger.IPAddr())
     err = pinger.Run()
