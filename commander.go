@@ -1,6 +1,9 @@
 package main
 
 import (
+    "fmt"
+    probing "github.com/prometheus-community/pro-bing"
+    "log"
     "os"
     "time"
 )
@@ -22,8 +25,49 @@ type SystemInfo struct {
 type commander struct{}
 
 func (c *commander) Ping(host string) (PingResult, error) {
-    //TODO implement me
-    panic("implement me")
+    // built from examples in
+    // https://github.com/prometheus-community/pro-bing
+    s := false
+    t := time.Duration(0)
+
+    pinger, err := probing.NewPinger(host)
+    if err != nil {
+        panic(err)
+    }
+
+    pinger.OnRecv = func(pkt *probing.Packet) {
+        log.Printf("%d bytes from %s: icmp_seq=%d time=%v ttl=%v\n",
+            pkt.Nbytes, pkt.IPAddr, pkt.Seq, pkt.Rtt, pkt.TTL)
+    }
+    pinger.OnDuplicateRecv = func(pkt *probing.Packet) {
+        log.Printf("%d bytes from %s: icmp_seq=%d time=%v ttl=%v (DUP!)\n",
+            pkt.Nbytes, pkt.IPAddr, pkt.Seq, pkt.Rtt, pkt.TTL)
+    }
+    pinger.OnFinish = func(stats *probing.Statistics) {
+        log.Printf("\n--- %s ping statistics ---\n", stats.Addr)
+        log.Printf("%d packets transmitted, %d packets received, %d duplicates, %v%% packet loss\n",
+            stats.PacketsSent, stats.PacketsRecv, stats.PacketsRecvDuplicates, stats.PacketLoss)
+        log.Printf("round-trip min/avg/max/stddev = %v/%v/%v/%v\n",
+            stats.MinRtt, stats.AvgRtt, stats.MaxRtt, stats.StdDevRtt)
+        s = true
+        t = stats.MaxRtt
+    }
+
+    pinger.Count = 4
+    pinger.Size = 24
+    pinger.Interval = time.Second
+    pinger.Timeout = time.Second * 100000
+    pinger.TTL = 64
+    //pinger.InterfaceName = "ping"
+    pinger.SetPrivileged(false)
+    //pinger.SetTrafficClass(uint8(192))
+
+    log.Printf("PING %s (%s):\n", pinger.Addr(), pinger.IPAddr())
+    err = pinger.Run()
+    if err != nil {
+        panic(fmt.Errorf("Failed to ping target host:", err))
+    }
+    return PingResult{Successful: s, Time: t}, nil
 }
 
 func NewCommander() Commander {

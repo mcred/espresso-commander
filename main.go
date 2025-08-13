@@ -48,8 +48,12 @@ func handleCommand(cmdr Commander) http.HandlerFunc {
         var res CommandResponse
         switch req.Type {
         case "ping":
-            res.Success = true
-            res.Data = "pong"
+            p, err := cmdr.Ping(req.Payload)
+            if err != nil {
+                panic(err)
+            }
+            res.Success = p.Successful
+            res.Data = p.Time
             break
         case "sysinfo":
             res.Success = true
