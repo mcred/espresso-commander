@@ -22,11 +22,13 @@ func handleRequests(cmdr Commander) http.Handler {
     return mux
 }
 
+// CommandRequest struct for incoming request
 type CommandRequest struct {
     Type    string `json:"type"`    // "ping" or "sysinfo"
     Payload string `json:"payload"` // For ping, this is the host
 }
 
+// CommandResponse struct for outgoing resposne
 type CommandResponse struct {
     Success bool        `json:"success"`
     Data    interface{} `json:"data"`
@@ -69,11 +71,11 @@ func handleCommand(cmdr Commander) http.HandlerFunc {
 
         // encode and send response
         w.Header().Set("Content-Type", "application/json")
-        resJson, err := json.Marshal(res)
+        resJSON, err := json.Marshal(res)
         if err != nil {
             panic(err)
         }
-        _, err = w.Write(resJson)
+        _, err = w.Write(resJSON)
         if err != nil {
             panic(err)
         }

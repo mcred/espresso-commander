@@ -9,21 +9,29 @@ import (
     "time"
 )
 
+// Commander interface for commander
 type Commander interface {
     Ping(host string) (PingResult, error)
     GetSystemInfo() (SystemInfo, error)
 }
 
+// PingResult struct for ping result
 type PingResult struct {
     Successful bool
     Time       time.Duration
 }
 
+// SystemInfo struct for system informatin
 type SystemInfo struct {
     Hostname  string
     IPAddress string
 }
 type commander struct{}
+
+// NewCommander create a new commander instance
+func NewCommander() Commander {
+    return &commander{}
+}
 
 func (c *commander) Ping(host string) (PingResult, error) {
     // built from examples in
@@ -69,10 +77,6 @@ func (c *commander) Ping(host string) (PingResult, error) {
     return PingResult{Successful: s, Time: t}, nil
 }
 
-func NewCommander() Commander {
-    return &commander{}
-}
-
 func (c *commander) GetSystemInfo() (SystemInfo, error) {
     // Get the system hostname
     hostname, err := os.Hostname()
@@ -82,26 +86,26 @@ func (c *commander) GetSystemInfo() (SystemInfo, error) {
 
     // Initialize IP address variable
     ipAddress := ""
-    
+
     // Get all network interfaces
     interfaces, err := net.Interfaces()
     if err != nil {
         return SystemInfo{}, err
     }
-    
+
     // Iterate through interfaces to find an active, non-loopback interface
     for _, iface := range interfaces {
         // Skip interfaces that are down or loopback
         if iface.Flags&net.FlagUp == 0 || iface.Flags&net.FlagLoopback != 0 {
             continue
         }
-        
+
         // Get addresses for this interface
         addrs, err := iface.Addrs()
         if err != nil {
             continue
         }
-        
+
         // Check each address
         for _, addr := range addrs {
             var ip net.IP
@@ -112,14 +116,14 @@ func (c *commander) GetSystemInfo() (SystemInfo, error) {
             case *net.IPAddr:
                 ip = v.IP
             }
-            
+
             // Use the first IPv4 address found
             if ip != nil && ip.To4() != nil {
                 ipAddress = ip.String()
                 break
             }
         }
-        
+
         // Stop searching if we found an IP
         if ipAddress != "" {
             break
