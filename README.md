@@ -43,7 +43,7 @@ Sample Request:
 ```
 
 ## Getting Started
-There are two main ways to run this application: directly as a compiled binary or installed system executable. 
+There are two main ways to run this application: directly as a compiled binary or installed system executable. The following steps assume you are using MacOS. If you are using windows, only `make run` should work.  
 
 ### Running
 ```shell
