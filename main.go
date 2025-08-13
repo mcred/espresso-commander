@@ -1,6 +1,7 @@
 package main
 
 import (
+    "encoding/json"
     "fmt"
     "log"
     "net/http"
@@ -34,8 +35,40 @@ type CommandResponse struct {
 
 func handleCommand(cmdr Commander) http.HandlerFunc {
     return middleware(func(w http.ResponseWriter, r *http.Request) {
-        log.Println(r.Method, r.URL.Path)
-        panic("testing")
+        // get request struct from body
+        var req CommandRequest
+        body := json.NewDecoder(r.Body)
+        err := body.Decode(&req)
+        if err != nil {
+            panic(err)
+        }
+        defer r.Body.Close()
+
+        // prepare response struct
+        var res CommandResponse
+        switch req.Type {
+        case "ping":
+            res.Success = true
+            res.Data = "pong"
+            break
+        case "sysinfo":
+            res.Success = true
+            res.Data = "info"
+            break
+        default:
+            panic("invalid request type")
+        }
+
+        // encode and send response
+        w.Header().Set("Content-Type", "application/json")
+        resJson, err := json.Marshal(res)
+        if err != nil {
+            panic(err)
+        }
+        _, err = w.Write(resJson)
+        if err != nil {
+            panic(err)
+        }
     })
 }
 
