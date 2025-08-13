@@ -4,6 +4,7 @@ import (
     "fmt"
     probing "github.com/prometheus-community/pro-bing"
     "log"
+    "net"
     "os"
     "time"
 )
@@ -32,7 +33,7 @@ func (c *commander) Ping(host string) (PingResult, error) {
 
     pinger, err := probing.NewPinger(host)
     if err != nil {
-        panic(err)
+        return PingResult{}, err
     }
 
     pinger.OnRecv = func(pkt *probing.Packet) {
@@ -73,15 +74,65 @@ func NewCommander() Commander {
 }
 
 func (c *commander) GetSystemInfo() (SystemInfo, error) {
+    // Get the system hostname
     hostname, err := os.Hostname()
     if err != nil {
         return SystemInfo{}, err
     }
 
-    // Get IP address (implement this)
+    // Initialize IP address variable
+    ipAddress := ""
+    
+    // Get all network interfaces
+    interfaces, err := net.Interfaces()
+    if err != nil {
+        return SystemInfo{}, err
+    }
+    
+    // Iterate through interfaces to find an active, non-loopback interface
+    for _, iface := range interfaces {
+        // Skip interfaces that are down or loopback
+        if iface.Flags&net.FlagUp == 0 || iface.Flags&net.FlagLoopback != 0 {
+            continue
+        }
+        
+        // Get addresses for this interface
+        addrs, err := iface.Addrs()
+        if err != nil {
+            continue
+        }
+        
+        // Check each address
+        for _, addr := range addrs {
+            var ip net.IP
+            // Extract IP from address based on type
+            switch v := addr.(type) {
+            case *net.IPNet:
+                ip = v.IP
+            case *net.IPAddr:
+                ip = v.IP
+            }
+            
+            // Use the first IPv4 address found
+            if ip != nil && ip.To4() != nil {
+                ipAddress = ip.String()
+                break
+            }
+        }
+        
+        // Stop searching if we found an IP
+        if ipAddress != "" {
+            break
+        }
+    }
+
+    // Fallback to localhost if no suitable IP found
+    if ipAddress == "" {
+        ipAddress = "127.0.0.1"
+    }
 
     return SystemInfo{
         Hostname:  hostname,
-        IPAddress: "implement me",
+        IPAddress: ipAddress,
     }, nil
 }

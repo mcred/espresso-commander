@@ -56,8 +56,12 @@ func handleCommand(cmdr Commander) http.HandlerFunc {
             res.Data = p.Time
             break
         case "sysinfo":
+            s, err := cmdr.GetSystemInfo()
+            if err != nil {
+                panic(err)
+            }
             res.Success = true
-            res.Data = "info"
+            res.Data = s
             break
         default:
             panic("invalid request type")
